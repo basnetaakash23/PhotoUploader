@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "875892936879",
+    "firebase_url": "https://democamera-429d8.firebaseio.com",
+    "project_id": "democamera-429d8",
+    "storage_bucket": "democamera-429d8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:875892936879:android:29c7a720a3ea6794",
+        "android_client_info": {
+          "package_name": "com.example.aakashb.demo_cameraapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "875892936879-c7a0uerl9i04fn8pqfk916c93da18enk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCU616i0X6UazcP2CR9mozQaCXBbOXWhVo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
