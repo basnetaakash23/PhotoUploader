@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -26,14 +27,17 @@ import java.io.File;
 import java.io.IOException;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final int PICK_IMAGE_REQUEST = 1;
     int TAKE_PHOTO_CODE = 0;
     public static int count = 0;
     private ImageView mImageView;
-    private StorageReference storage;
-    private ProgressDialog mProgressDialog;
+
+
+
     public static final int GALLERY_INTENT = 2;
+    private Uri uri;
 
     /**
      * Called when the activity is first created.
@@ -42,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // Here, we are making a folder named picFolder to store
         // pics taken by the camera using this application.
@@ -78,42 +83,93 @@ public class MainActivity extends AppCompatActivity {
 
         });
         */
+       mImageView = (ImageView) findViewById(R.id.imageView1);
+
+
+
+       Button choose = (Button) findViewById(R.id.chooseButton);
+        choose.setOnClickListener(this);
 
         Button upload = (Button) findViewById(R.id.uploadButton);
-        upload.setOnClickListener(new View.OnClickListener(){
+        upload.setOnClickListener(this);
+
+    }
 
 
+
+    private void showFileChooser(){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,"Select an image"),PICK_IMAGE_REQUEST);
+    }
+
+    private void uploadFile(){
+        final ProgressDialog mProgressDialog = new ProgressDialog(this);
+
+        mProgressDialog.setTitle("Uploading...");
+        mProgressDialog.show();
+        StorageReference storage = FirebaseStorage.getInstance().getReference();
+        StorageReference filepath = storage.child("images").child(uri.getLastPathSegment());
+        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
 
             @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, GALLERY_INTENT);
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(MainActivity.this, "Upload Successful", Toast.LENGTH_SHORT).show();
+                mProgressDialog.dismiss();
+            }
+        })
+        .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                mProgressDialog.setMessage("Uploaded " + ((int)progress)+"%...");
+
+
             }
         });
+
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data!=null && data.getData()!=null) {
             Log.d("ResultOK", String.valueOf(RESULT_OK));
             Log.d("CameraDemo", "Pic saved");
-            mProgressDialog.setMessage("Uploading...");
-            mProgressDialog.show();
-            Uri uri = data.getData();
 
-            StorageReference filepath = storage.child("images").child(uri.getLastPathSegment());
-            filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
+            uri = data.getData();
 
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(MainActivity.this, "Upload Successful", Toast.LENGTH_SHORT).show();
-                    mProgressDialog.dismiss();
-                }
-            });
+
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                mImageView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
+
 
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        if(view.getId() == R.id.chooseButton){
+            showFileChooser();
+
+
+        }else if(view.getId() == R.id.uploadButton){
+            uploadFile();
+
+
+        }
+
     }
 }
